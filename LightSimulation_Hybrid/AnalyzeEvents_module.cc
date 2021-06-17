@@ -89,7 +89,7 @@ private:
   std:: vector< double> X;
   std:: vector< double> X1;
   std:: vector< double> Z;
-  std:: vector< double> Z1; 
+  std:: vector< double> Z1;
   //phot/MeV: fotones generados entre la deposicion de energia
   // std:: vector< double> photMeV;
   // std:: vector< double> photMeV1;
@@ -99,8 +99,9 @@ private:
 
 
   //Variables para los fotones detectados: el 1 para la libreria y nada para el semianalitico
+  //ref para los fotones VIS y nada para los fotones VUV
 
-  //Canal optico en el que se detectan los fotones 
+  //Canal optico en el que se detectan los fotones
   std:: vector< int> chanopt;
   std:: vector< int> chanoptref;
   std:: vector< int> chanopt1;
@@ -109,9 +110,9 @@ private:
   //Numero de fotones detectados por MeV para semianalitico (directos y reflejados) y para la libreria
   std:: vector <double> phot_detected;
   std:: vector <double> phot_detectedref;
-  std:: vector <double> phot_detected1;   
+  std:: vector <double> phot_detected1;
   std:: vector <double> phot_detectedref1;
-  
+
 
 };
 
@@ -122,8 +123,8 @@ test::AnalyzeEvents::AnalyzeEvents(fhicl::ParameterSet const& p)
 {
   // Call appropriate consumes<>() for any products to be retrieved by this module.
   // float maxEnergy = p.get<float>("MaxNuEnergy", 3.0);
-  //art::ServiceHandle<art::TFileService> tfs;  
-   // fHist = tfs->make<TH1F>("enu", ";E_{#nu} (GeV);Events", 100, 0, maxEnergy); 
+  //art::ServiceHandle<art::TFileService> tfs;
+   // fHist = tfs->make<TH1F>("enu", ";E_{#nu} (GeV);Events", 100, 0, maxEnergy);
 }
 
 
@@ -133,28 +134,28 @@ void test::AnalyzeEvents::analyze(art::Event const& e)
   std::cout<<"Hemos cambiado de entrada"<<std::endl;
 
 
-  // art::Handle<std::vector<simb::MCTruth> > mctruths;  
-  // e.getByLabel("generator", mctruths);   
-  // for (auto const& truth : *mctruths) {    
-  // const simb::MCNeutrino& mcnu = truth.GetNeutrino();    
-  //const simb::MCParticle& nu = mcnu.Nu();    
-  //enu = nu.E();    
- //fHist->Fill(enu);  
-  // } 
+  // art::Handle<std::vector<simb::MCTruth> > mctruths;
+  // e.getByLabel("generator", mctruths);
+  // for (auto const& truth : *mctruths) {
+  // const simb::MCNeutrino& mcnu = truth.GetNeutrino();
+  //const simb::MCParticle& nu = mcnu.Nu();
+  //enu = nu.E();
+ //fHist->Fill(enu);
+  // }
 
 
 
   //------------------------VARIABLES PARA LA LIBRERIA OPTICA------------------------------------
- 
-  //Esta parte se comenta cuando se corra solo el modelo semianalitico
+
+  //Esta parte se comenta cuando se use solo el modelo semianalitico
  art::Handle<std::vector<sim::SimEnergyDeposit> > edepHandle1;
  e.getByLabel("IonAndScintOUT", edepHandle1);
- 
- art::Handle<std::vector<sim::SimPhotonsLite> > simphotons1;                                                                                                                                              
+
+ art::Handle<std::vector<sim::SimPhotonsLite> > simphotons1;
  e.getByLabel("LIB", simphotons1);
 
  art::Handle<std::vector<sim::SimPhotonsLite> > simphotonsref1;
- e.getByLabel("LIB:Reflected", simphotonsref1);  
+ e.getByLabel("LIB:Reflected", simphotonsref1);
 
  E1.clear();
  //dEdx1.clear();
@@ -179,9 +180,9 @@ void test::AnalyzeEvents::analyze(art::Event const& e)
     //double  energystep = energy_deposit/step_length;
     //double  numphot  = edepi.NumPhotons()/step_length;
     //double  photenergy = edepi.NumPhotons()/energy_deposit;
-    
+
     double  posY = edepi.MidPointY();
-    double  posZ = edepi.MidPointZ();         
+    double  posZ = edepi.MidPointZ();
     double  posX = edepi.MidPointX();
 
    E1.push_back(energy_deposit);
@@ -192,47 +193,48 @@ void test::AnalyzeEvents::analyze(art::Event const& e)
    Z1.push_back(posZ);
    //photMeV1.push_back(photenergy);
    //step1.push_back(step_length);
- 
+
    // std::cout<<"posX= "<<posX<<std::endl;
    // std::cout<<"energy_deposit= "<<energy_deposit<<std::endl;
-   
+
  }
- //Fotones detectados
- for (auto const& phots : *simphotons1) {                                                                                                                                                                 
-     
-   int opt = phots.OpChannel;                                                                                                                                                                              
+ //Fotones detectados VUV libreria
+ for (auto const& phots : *simphotons1) {
+
+   int opt = phots.OpChannel;
+   //Solo usamos los PMT coated
    if(opt==7||opt==9||opt==11||opt==13||opt==15||opt==17||opt==61||opt==63||opt==65||opt==67||opt==69||opt==71||opt==85||opt==87||opt==89||opt==91||opt==93||opt==95||opt==139||opt==141||opt==143||opt==145||opt==147||opt==149||opt==163||opt==165||opt==167||opt==169||opt==171||opt==173||opt==217||opt==219||opt==221||opt==223||opt==225||opt==227||opt==241||opt==243||opt==245||opt==247||opt==249||opt==251||opt==295||opt==297||opt==299||opt==301||opt==303||opt==305){
      int  dp=0;
      std::map<int, int> photmap = phots.DetectedPhotons;
-     //suma sobre todos los fotones que llegan a un PMT                                                                                                                                                    
+     //suma sobre todos los fotones que llegan a un PMT
 
      for(auto fphoton = photmap.begin();fphoton != photmap.end();fphoton++){
 
        dp+=fphoton->second;
-     }//for    
+     }//for
 
     phot_detected1.push_back(dp);
     chanopt1.push_back(opt);
-                                                                                                                                                                               
+
      std::cout<<"phot_detected vuvlib= "<<dp<<std::endl;
      std::cout<<"chanopt= "<<opt<<std::endl;
    }
- }             
+ }
 
-
+//Fotones detectados VIS libreria
  for (auto const& photsref1 : *simphotonsref1) {
 
    int opt = photsref1.OpChannel;
-
+   //Solo usamos los PMT coated
    if(opt==7||opt==9||opt==11||opt==13||opt==15||opt==17||opt==61||opt==63||opt==65||opt==67||opt==69||opt==71||opt==85||opt==87||opt==89||opt==91||opt==93||opt==95||opt==139||opt==141||opt==143||opt==145||opt==147||opt==149||opt==163||opt==165||opt==167||opt==169||opt==171||opt==173||opt==217||opt==219||opt==221||opt==223||opt==225||opt==227||opt==241||opt==243||opt==245||opt==247||opt==249||opt==251||opt==295||opt==297||opt==299||opt==301||opt==303||opt==305){
      int  dp=0;
      std::map<int, int> photmap = photsref1.DetectedPhotons;
-     //suma sobre todos los fotones que llegan a un PMT                                                                                                                                                    
+     //suma sobre todos los fotones que llegan a un PMT
 
      for(auto fphoton = photmap.begin();fphoton != photmap.end();fphoton++){
 
        dp+=fphoton->second;
-     }//for                                                                                                                                                                                                 
+     }//for
 
      phot_detectedref1.push_back(dp);
      chanoptref1.push_back(opt);
@@ -247,14 +249,14 @@ void test::AnalyzeEvents::analyze(art::Event const& e)
 
  std::cout<<"--------------------------------------------------------------------"<<std::endl;
 
- //------------------------VARIABLES PARA MODELO SEMIANALITICO------------------------------------ 
+ //------------------------VARIABLES PARA MODELO SEMIANALITICO------------------------------------
   art::Handle<std::vector<sim::SimEnergyDeposit> > edepHandle;
   e.getByLabel("IonAndScintIN", edepHandle);
   art::Handle<std::vector<sim::SimPhotonsLite> > simphotons;
   e.getByLabel("PAR", simphotons);
   art::Handle<std::vector<sim::SimPhotonsLite> > simphotonsref;
   e.getByLabel("PAR:Reflected", simphotonsref);
-   
+
    E.clear();
    //dEdx.clear();
    //NumPhotons.clear();
@@ -266,25 +268,25 @@ void test::AnalyzeEvents::analyze(art::Event const& e)
 
    phot_detected.clear();
    chanopt.clear();
- 
+
    phot_detectedref.clear();
    chanoptref.clear();
 
  //Fotones generados
- for (auto const& edepi : *edepHandle) {                                                                                                                                                                  
-  
+ for (auto const& edepi : *edepHandle) {
+
     double energy_deposit  = edepi.Energy();
     //double step_length  = edepi.StepLength();
     //double  energystep = energy_deposit/step_length;
-    // double  numphot  = edepi.NumPhotons()/step_length;                                                                                                             
+    // double  numphot  = edepi.NumPhotons()/step_length;
     //double  photenergy = edepi.NumPhotons()/energy_deposit;
     double  posY = edepi.MidPointY();
-    double  posZ = edepi.MidPointZ();                
+    double  posZ = edepi.MidPointZ();
     double  posX = edepi.MidPointX();
 
    E.push_back(energy_deposit);
-   // dEdx.push_back(energystep);  
-   // NumPhotons.push_back(numphot);   
+   // dEdx.push_back(energystep);
+   // NumPhotons.push_back(numphot);
    Y.push_back(posY);
    X.push_back(posX);
    Z.push_back(posZ);
@@ -296,20 +298,21 @@ void test::AnalyzeEvents::analyze(art::Event const& e)
    // std::cout<<"energy_deposit= "<<energy_deposit<<std::endl;
 }
 
- //Fotones directos detectados                                                                                                                                                                        
+ //Fotones directos detectados VUV semianalitico
  for (auto const& phots : *simphotons){
 
-   int opt = phots.OpChannel;                                                                                                                                                                                 
+   int opt = phots.OpChannel;
+   //Usando PMTs coated
    if(opt==7||opt==9||opt==11||opt==13||opt==15||opt==17||opt==61||opt==63||opt==65||opt==67||opt==69||opt==71||opt==85||opt==87||opt==89||opt==91||opt==93||opt==95||opt==139||opt==141||opt==143||opt==145||opt==147||opt==149||opt==163||opt==165||opt==167||opt==169||opt==171||opt==173||opt==217||opt==219||opt==221||opt==223||opt==225||opt==227||opt==241||opt==243||opt==245||opt==247||opt==249||opt==251||opt==295||opt==297||opt==299||opt==301||opt==303||opt==305){
-  
+
      int  dp=0;
      std::map<int, int> photmap = phots.DetectedPhotons;
-     //suma sobre todos los fotones que llegan a un PMT                                                                                                                                                    
+     //suma sobre todos los fotones que llegan a un PMT
 
      for(auto fphoton = photmap.begin();fphoton != photmap.end();fphoton++){
 
        dp+=fphoton->second;
-     }//for    
+     }//for
 
     phot_detected.push_back(dp);
    chanopt.push_back(opt);
@@ -319,21 +322,20 @@ void test::AnalyzeEvents::analyze(art::Event const& e)
    }
  }
 
- //Fotones reflejados  detectados                                                                                                                                                                          
-                                                                                                                                                                                                           
+//Fotones directos detectados VIS semianalitico
  for (auto const& photsref : *simphotonsref) {
 
-   int opt = photsref.OpChannel;                                                                                                                                                                           
-   
+   int opt = photsref.OpChannel;
+   //Usando PMTs coated
    if(opt==7||opt==9||opt==11||opt==13||opt==15||opt==17||opt==61||opt==63||opt==65||opt==67||opt==69||opt==71||opt==85||opt==87||opt==89||opt==91||opt==93||opt==95||opt==139||opt==141||opt==143||opt==145||opt==147||opt==149||opt==163||opt==165||opt==167||opt==169||opt==171||opt==173||opt==217||opt==219||opt==221||opt==223||opt==225||opt==227||opt==241||opt==243||opt==245||opt==247||opt==249||opt==251||opt==295||opt==297||opt==299||opt==301||opt==303||opt==305){
      int  dp=0;
      std::map<int, int> photmap = photsref.DetectedPhotons;
-     //suma sobre todos los fotones que llegan a un PMT                                                                                                                                                    
+     //suma sobre todos los fotones que llegan a un PMT
 
      for(auto fphoton = photmap.begin();fphoton != photmap.end();fphoton++){
 
        dp+=fphoton->second;
-     }//for    
+     }//for
 
      phot_detectedref.push_back(dp);
      chanoptref.push_back(opt);
@@ -363,8 +365,8 @@ void test::AnalyzeEvents::beginJob()
   fTree = tfs->make<TTree>("tree","Analyzer Output Tree"); //Define tree
   // fTree->Branch("eventID",&fEventID,"eventID/i");
   // fTree->Branch("Enu",&enu,"Enu/f");
-  //fTree->Branch("chanopt","std::vector<int>", &chanopt); 
- 
+  //fTree->Branch("chanopt","std::vector<int>", &chanopt);
+
   //Branches para la libreria
   fTree->Branch("E1", &E1);
   //fTree->Branch("dEdx1", &dEdx1);
@@ -379,7 +381,7 @@ void test::AnalyzeEvents::beginJob()
   fTree->Branch("phot_detected1", &phot_detected1);
   fTree->Branch("chanoptref1", &chanoptref1);
   fTree->Branch("phot_detectedref1", &phot_detectedref1);
- 
+
   //Branches para el modelo semianalitico
   fTree->Branch("E", &E);
   //fTree->Branch("dEdx", &dEdx);
@@ -397,11 +399,6 @@ void test::AnalyzeEvents::beginJob()
   fTree->Branch("phot_detectedref", &phot_detectedref);
 
 }
-
-
-
-
-
 
 
 

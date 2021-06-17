@@ -1,16 +1,18 @@
-//Lanzamiento de 50 crossing muon en las posiciones x= 20,40,60,,80,100,120,140,160,175,185
-//195,204,212,220,228,236,244,252 cm del detector SBND.
+//Lanzamiento de 50 crossing muon en las posiciones x= 20,40,60,80,100,120,140,160,175,185
+//195,204,212,220,228,236,244,252 cm del detector SBND. Hay un .root para cada posición.
 
 //pad 1
-//Para cada 50 crossing muons se calcula la media de las posiciones de la energía depositada
-//se calcula la suma de la energía total depositada
-//para la luz ultravioleta (VUV) y la luz reflejada (VIS)
-//se calcula  Nphot multiplicado por 0.03
-//para tener en cuenta el prescale, en función de x
-//Este cálculo se hace usando el LArQL Model (userecomb.root) y sin este modelo (norecomb.root)
+//
+//Eje X: distancia en x (cm)
+//Eje Y: Número de fotones generados (#PE)
+//Para cada 50 crossing muons (en cada en cada una de las posiciones) se calcula la media de las posiciones (punto en el eje x)
+//Para cada 50 crossing muons se calcula la suma de fotones generados para la luz ultravioleta (VUV) y la luz reflejada (VIS)
+//multiplicado por 0.03 para tener en cuenta el prescale (punto del eje y)
+//Este cálculo se hace usando el LArQL Model, que tiene en cuenta los "escaping electrons" que no se recombinan a bajo campo electrico
+//y por tanto sus efectos serán visibles en el non-active volume (userecomb.root) y sin este modelo (norecomb.root).
 
 //pad 2
-//Se representa el error relativo del numero de fotones entre ambos modelos
+//Se representa el error relativo del numero de fotones entre ambos modelos (usando LArQL y sin usarlo)
 
 
 {
@@ -103,7 +105,7 @@ TFile *inputh252= new TFile("output_hib_252_norecomb.root","read");
    vector<double> *VIShl20, *VIShl40, *VIShl60, *VIShl80, *VIShl100, *VIShl120,*VIShl140,*VIShl160,*VIShl175, *VIShl185,*VIShl195,*VIShl204,*VIShl212, *VIShl220, *VIShl228, *VIShl236,*VIShl244, *VIShl252;
 
 
-  //Leemos los TTree semianalitico
+  //Leemos los TTree
   TTree* trees20=(TTree*)inputs20->Get("ana/tree");
   TTree* trees40=(TTree*)inputs40->Get("ana/tree");
   TTree* trees60=(TTree*)inputs60->Get("ana/tree");
@@ -124,7 +126,14 @@ TFile *inputh252= new TFile("output_hib_252_norecomb.root","read");
   TTree* trees252=(TTree*)inputs252->Get("ana/tree");
 
 
-
+//Notación: las variables con un 1 al final se han calculado con la librería óptica
+//y por tanto son fuera del volumen activo. Las variables que no tienen 1 se han calculado
+//usando el modelo semianalitico y por tanto son dentro del volumen activo
+//Para el nombre de la variable, si lleva una s al inicio es con LArQL y si lleva una h al inicio es sin LArQL
+//si lleva una s es con el semianalítico y si lleva una l es con la librería.
+//Por ejemplo Xss20 quiere decir que son las posiciones de los 50 muones, lanzados en x=20cm usando LArQL con el modelo semianalítico
+//(es decir las posiciones dentro del volumen activo), mientras que Xsl20 es lo mismo pero las posiciones de fuera del volumen
+//activo (usando la libreria)
   trees20->SetBranchAddress("X",&Xss20);
   trees20->SetBranchAddress("X1",&Xsl20);
   trees20->SetBranchAddress("phot_detected",&VUVss20);
@@ -270,7 +279,7 @@ TFile *inputh252= new TFile("output_hib_252_norecomb.root","read");
 
 
 
-  //Leemos los TTree hibrido
+  //Leemos los TTree
   TTree* treeh20=(TTree*)inputh20->Get("ana/tree");
   TTree* treeh40=(TTree*)inputh40->Get("ana/tree");
   TTree* treeh60=(TTree*)inputh60->Get("ana/tree");
@@ -440,7 +449,7 @@ TFile *inputh252= new TFile("output_hib_252_norecomb.root","read");
 
 
   //Ver las entradas que tienen los TTree
-  //semianalitico
+  //hibrido LArQL
   int entriess20=trees20->GetEntries();
   int entriess40=trees40->GetEntries();
   int entriess60=trees60->GetEntries();
@@ -461,7 +470,7 @@ TFile *inputh252= new TFile("output_hib_252_norecomb.root","read");
   int entriess252=trees252->GetEntries();
 
 
-  //hibrido
+  //hibrido sin LArQL
   int entriesh20=treeh20->GetEntries();
   int entriesh40=treeh40->GetEntries();
   int entriesh60=treeh60->GetEntries();
@@ -507,11 +516,9 @@ for(int i=0;i<entriess20;i++) //50 veces
   //Hace esto para cada muon
   //posx
   for(int j=0;j<Xss20->size();j++){
-    //X = Xs20->at(j);
     hsx20->Fill(Xss20->at(j)); //llena todas las x de los 50 muones
   }
   for(int j=0;j<Xsl20->size();j++){
-    //X = Xs20->at(j);
     hsx20->Fill(Xsl20->at(j)); //llena todas las x de los 50 muones
   }
 
@@ -2502,23 +2509,18 @@ cout<<xh[17]<<" VIS= "<<yhvis[17]<<endl;
 ///
 //Para plotearlo en un graph
 //---------------------------VUV component-------------------//
-//semi
+//hib LArQL
  auto gs = new TGraphErrors(ns,xs,ys,exs,eys);
 
-//hib
+//hib sin LArQL
  auto gh = new TGraphErrors(nh,xh,yh,exh,eyh);
  //-------------------------VIS component-----------------------//
- //semi
+ //hib LArQL
   auto gsvis = new TGraphErrors(ns,xs,ysvis,exs,eysvis);
-  //hib
+  //hib sin LArQL
   auto ghvis = new TGraphErrors(nh,xh,yhvis,exh,eyhvis);
 
   auto mg = new TMultiGraph();
-
-
- //gs->GetXaxis()->SetRangeUser(0.,300.);
- //gs->GetYaxis()->SetRangeUser(0.,1500.);
-
 
 //Pinto los graphs
 
