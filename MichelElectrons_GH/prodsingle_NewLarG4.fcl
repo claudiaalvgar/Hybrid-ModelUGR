@@ -1,0 +1,25 @@
+#include "prodsingle_sbnd_proj.fcl"
+
+# at the end of the configuration, we can override single parameters to reflect our needs:
+
+physics.producers.generator.PDG: [ 11 ]            # e-
+physics.producers.generator.PosDist: 1             #1 gaussian 0 Flat position dist.
+physics.producers.generator.X0: [ 100.0 ]
+physics.producers.generator.Y0: [ 0.0 ]
+physics.producers.generator.Z0: [ 315. ]
+physics.producers.generator.T0: [ 0.0 ]
+physics.producers.generator.SigmaX: [ 50.0 ]        # x = (50, 150)
+physics.producers.generator.SigmaY: [ 60 ]         # y = (-60, 60)
+physics.producers.generator.SigmaZ: [ 50 ]         # z = (265, 365)
+physics.producers.generator.SigmaT: [ 0.0 ]        # In time
+physics.producers.generator.PDist: 1               # Gaussian
+physics.producers.generator.P0: [ 0.03 ]
+physics.producers.generator.SigmaP: [ 0.01 ]
+physics.producers.generator.AngleDist: 0           # Flat angle dist.
+physics.producers.generator.Theta0XZ: [ 0. ]       # y-azimuth
+physics.producers.generator.Theta0YZ: [ 0. ]       # y-latitude
+physics.producers.generator.SigmaThetaXZ: [ 180. ]
+physics.producers.generator.SigmaThetaYZ: [ 180. ]
+
+services.Geometry.GDML: "sbnd_newLArG4.gdml"
+services.AuxDetGeometry.GDML: "sbnd_newLArG4.gdml"
