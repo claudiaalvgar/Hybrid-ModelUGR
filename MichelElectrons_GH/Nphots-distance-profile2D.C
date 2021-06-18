@@ -1,9 +1,9 @@
 //Pad 1
-//Representa en un profile 2D el error relativo entre fotones VUV lite y reco en función del numero de
-//fotones detectados y la distancia
+//Representa en un profile 2D el error relativo entre fotones VUV lite (g4) y reco (digitalizados) en función del numero de
+//fotones detectados (y) y la distancia (x)
 //Pad 2
 //Cada graph representa un rango de ángulos de 10º y se representan en función del numero de
-//fotones detectados y la distancia al PMT
+//fotones detectados (y) y la distancia al PMT (x)
 
 
 {
@@ -51,10 +51,11 @@
 
   TFile *inputPMTs= new TFile("PMTs.root","read");
 
-
+  //Leemos la energia depositada en cada step, las posiciones x,y,z y los fotones generados (phot_generated).
+  //Leemos flash_pe_vuv: fotones detectados vuv con la digitalizacion y phot_detected son los fotones detectados sin la digitalización (g4)
   vector<double> *E, *phot_generated, *X, *Y, *Z, *flash_pe_vuv, *phot_detected;
 
-
+//Para los PMTs leemos de un .root el número del canal optico (numpmt) y la posición x,y,z de ese PMT
   vector<double> *numpmt, *Xpmt, *Ypmt, *Zpmt;
 
   TTree* treeMichels=(TTree*)inputMichels->Get("ana/tree");
@@ -114,25 +115,8 @@ for(int j=0;j<X->size();j++){
    phot_gen += phot_generated->at(j);
    Energy += E->at(j);
 
-   //cout<<"x= "<<X->at(j)/E->at(j)<<" y= "<<Y->at(j)/E->at(j)<<" z= "<<Z->at(j)/E->at(j)<<endl;
-   //cout<<"fotones generados= "<<phot_generated->at(j)<<endl;
 }
 if(phot_gen==0) continue;
-//cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
-
-
-//Esto es para que saque los histogramas de arriba de uno en uno, hay que darle doble click
-//para ir cerrándolos
-
-//TCanvas *canvas0 = new TCanvas("canvas0", "graph draw options",200,200,500,400);
-//hx->SetTitle("x positions for 1 Michel electron");
-//hx->GetXaxis()->SetTitle("x");
-//hx->Draw();
-//canvas0->Update();
-//canvas0->Modified();
-//canvas0->WaitPrimitive();
-
-
   //X de ese electron
   //double xscint=hx->GetMean()/Energy;
   double xscint=hx->GetMean();
@@ -215,7 +199,7 @@ if(phot_gen==0) continue;
        hprof2d->Fill(distance_cm,hits_g4,(hits_flash-hits_g4)/hits_g4,1);
        hprofx->Fill(distance_cm,distance_cm);
        hprofy->Fill(hits_g4,hits_g4);
-       //Guardamos los valores para los angulos onaxis
+       //Guardamos los valores para los angulos onaxis y el resto de ángulos
        if((0<=theta)&&(theta<10)){x0.push_back(distance_cm);
                     y0.push_back(hits_g4);}
        if((10<=theta)&&(theta<20)){x1.push_back(distance_cm);
@@ -235,8 +219,6 @@ if(phot_gen==0) continue;
        if((80<=theta)&&(theta<90)){x8.push_back(distance_cm);
                      y8.push_back(hits_g4);}
 
-       //cout<<"Dist: "<<distance_cm<<" Nphots: "<<hits_g4<<" Error: "<<(hits_flash-hits_g4)/hits_g4<<endl;
-      if(hits_g4>12000){cout<<"N Lite= "<<hits_g4<<" theta= "<<theta<<" Dist: "<<distance_cm<<endl;}
 
           }
        }//for chanopt
@@ -269,7 +251,7 @@ if(phot_gen==0) continue;
         hprofx->Fill(distance_cm,distance_cm);
         hprofy->Fill(hits_g4,hits_g4);
 
-        //Guardamos los valores para los angulos onaxis
+        //Guardamos los valores para los angulos onaxis y el resto de ángulos
         if((0<=theta)&&(theta<10)){x0.push_back(distance_cm);
                      y0.push_back(hits_g4);}
         if((10<=theta)&&(theta<20)){x1.push_back(distance_cm);
@@ -288,9 +270,6 @@ if(phot_gen==0) continue;
                       y7.push_back(hits_g4);}
         if((80<=theta)&&(theta<90)){x8.push_back(distance_cm);
                       y8.push_back(hits_g4);}
-
-        //cout<<"Dist: "<<distance_cm<<" Nphots: "<<hits_g4<<" Error: "<<(hits_flash-hits_g4)/hits_g4<<endl;
-        if(hits_g4>12000){cout<<"N Lite= "<<hits_g4<<" theta= "<<theta<<" Dist: "<<distance_cm<<endl;}
 
             }
          }//for chanopt

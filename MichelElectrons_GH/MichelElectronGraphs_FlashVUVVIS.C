@@ -1,5 +1,5 @@
-//Programa que calcula la calibración geométrica del modelo semianalítico para SBND
-//Se representan las GH teóricas para intervalos de ángulos [0º,10º], [10,20].....[80,90]
+//Programa que calcula la calibración del modelo semianalítico (para las GH) usando datos reales para SBND
+//Se representan las GH teóricas con los parámetros en la simulaciópn para intervalos de ángulos [0º,10º], [10,20].....[80,90]
 //Input: fichero .root con 2000 electrones Michel
 //Calcula Nfotonesreco(VUVVIS-VIS)/Nfotonesgeom para cada Michel en función de la distancia del electrón a cada PMT
 //la poscion de cada Michel se calcula como la media de las posiciones de las deposiciones de energía para ese electrón
@@ -116,6 +116,7 @@ for(int j=0; j<9; j++) {
 
 TFile *inputPMTs= new TFile("PMTs.root","read");
 TTree* treePMTs=(TTree*)inputPMTs->Get("treepmt");
+//Para los PMTs leemos de un .root el número del canal optico (numpmt) y la posición x,y,z de ese PMT
 vector<double> *numpmt, *Xpmt, *Ypmt, *Zpmt;
 //double numpmt, Xpmt, Ypmt, Zpmt;
 treePMTs->SetBranchAddress("numpmt",&numpmt);
@@ -139,7 +140,8 @@ cout<<"Entradas arbol PMT: "<<entriesPMTs<<endl;
   //TFile *inputMichels= new TFile(path.c_str());
   TFile *inputMichels= new TFile("analysisOutputVUVVIS_run1-1_subrun1-7.root","read");
 
-
+  //Leemos la energia depositada en cada step, las posiciones x,y,z y los fotones generados (phot_generated).
+  //Leemos flash_pe_v: fotones detectados vuv+vis con la digitalizacion
   vector<double> *E, *phot_generated, *X, *Y, *Z, *flash_pe_v;
 
   TTree* treeMichels=(TTree*)inputMichels->Get("ana/tree");
@@ -292,9 +294,11 @@ cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
        //double hits_simulation= flash_pe_v->at(k);
          double hits_simulation;
 
-        //Teniendo en cuenta que la luz en los coated (vuvvis) sea al menos un 10% mayor
+        //Teniendo en cuenta que la luz en los coated (vuvvis) sea al menos un 10% (difvuvvis) mayor
         //que en los uncoated (vis)
-        //Cortes de calidad
+        //Por ejemplo para la primera window, a los fotones detectados en los canales 7,9,61 y 63 (coated:vuv+vis)
+        //restamos los fotones detectados en el pmt uncoated central: 37 (uncoated:vis)
+
          if(chan==7||chan==9||chan==61||chan==63){
            if(flash_pe_v->at(k)/flash_pe_v->at(37)>=difvuvvis){
            hits_simulation= flash_pe_v->at(k)-flash_pe_v->at(37);
@@ -381,7 +385,7 @@ cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
 
          if(hits_simulation<=0) continue;
 
-         //Mismos cortes que para VUV
+         //Mismos cortes de calidad en distancia y numero de fotones detectados que para el caso solo VUV
          if((counter==0)&&((hits_simulation<23)||(hits_simulation>2000))) continue; //onaxis
          if((counter==0)&&((distance_cm<79)||(distance_cm>218))) continue;
 

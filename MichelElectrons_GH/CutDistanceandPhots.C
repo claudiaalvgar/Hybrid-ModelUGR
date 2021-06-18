@@ -1,7 +1,7 @@
-//Cortes en distancias y numero de fotones si el error relativo es mayor del 5%
-//sobre el bias entre fotones Lite y fotones reconstruidos con el flash
+//Cortes en distancias (pad1) y numero de fotones (pad2) si el error relativo entre fotones Lite y fotones reconstruidos con el flash
+//((hits_flash-hits_g4)/hits_g4) es mayor del 5% sobre el bias
 //lo hace para cada rango de ángulos a través de la variable "angle"
-//además representa la reconstrucción en las GH para fotones VUV lite y fotones VUV reco
+//además representa la reconstrucción en las GH para fotones VUV lite (pad3) y fotones VUV reco (pad4)
 
 {
 //Dibujar Gaisser-hillas
@@ -123,10 +123,11 @@ TProfile *hprofx4= new TProfile("", "", 60,0,600,"");
 
   TFile *inputPMTs= new TFile("PMTs.root","read");
 
-
+//Leemos la energia depositada en cada step, las posiciones x,y,z y los fotones generados (phot_generated).
+//Leemos flash_pe_vuv: fotones detectados vuv con la digitalizacion y phot_detected son los fotones detectados sin la digitalización (g4)
   vector<double> *E, *phot_generated, *X, *Y, *Z, *flash_pe_vuv, *phot_detected;
 
-
+//Para los PMTs leemos de un .root el número del canal optico (numpmt) y la posición x,y,z de ese PMT
   vector<double> *numpmt, *Xpmt, *Ypmt, *Zpmt;
 
   TTree* treeMichels=(TTree*)inputMichels->Get("ana/tree");
@@ -161,7 +162,7 @@ TProfile *hprofx4= new TProfile("", "", 60,0,600,"");
   TH1F*hz=new TH1F("hz", "", 100,-500,500);
 
 
-for(int i=0;i<entriesMichels;i++) //numero de particulas que lanzas son las entries (100)
+for(int i=0;i<entriesMichels;i++) //numero de particulas que lanzas son las entries (2000 electrones de Michel)
 {
   treeMichels->GetEntry(i); //primer electron de Michel
 
@@ -181,15 +182,12 @@ for(int j=0;j<X->size();j++){
 //de las deposiciones de energia y calculamos la media
 
    hx->Fill(X->at(j),E->at(j));
-   //if(i==53){cout<<"x= "<<X->at(j)<<endl;}
    hy->Fill(Y->at(j),E->at(j));
    hz->Fill(Z->at(j),E->at(j));
    phot_gen += phot_generated->at(j);
    Energy += E->at(j);
-
-   //cout<<"x= "<<X->at(j)/E->at(j)<<" y= "<<Y->at(j)/E->at(j)<<" z= "<<Z->at(j)/E->at(j)<<endl;
-   //cout<<"fotones generados= "<<phot_generated->at(j)<<endl;
 }
+//Si no se generan fotones continua
 if(phot_gen==0) continue;
 cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
 
@@ -207,17 +205,14 @@ cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
 
 
   //X de ese electron
-  //double xscint=hx->GetMean()/Energy;
   double xscint=hx->GetMean();
   //Y
-  //double yscint=hy->GetMean()/Energy;
   double yscint=hy->GetMean();
   //Z
-  //double zscint=hz->GetMean()/Energy;
   double zscint=hz->GetMean();
   cout<<hx->GetRMS()<<" "<<hy->GetRMS()<<" "<<hz->GetRMS()<<endl;
   //Corte para que no tenga en cuenta los electrones que sus posiciones de deposiciones de energía estén
-  //separadas más de 5cm
+  //separadas más de 7cm
   double MinSpread=7;
   if(hx->GetRMS()>MinSpread||hy->GetRMS()>MinSpread||hz->GetRMS()>MinSpread) continue;
   //cout<<" x media= "<<xscint<<" y= "<<yscint<<" z= "<<zscint<<endl;
@@ -229,18 +224,17 @@ cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
   //Calculamos la distancia a cada PMT y el numero de fotones detectados en cada PMT para ese punto de centelleo
   for(int j=0;j<entriesPMTs;j++){
     //Cada PMT es una entrada del arbol, tiene 320 entradas:
-      treePMTs->GetEntry(j);
+    treePMTs->GetEntry(j);
+    //Sacamos la x e y del PMT
        double xpmt=Xpmt->at(j);
        double ypmt=Ypmt->at(j);
-       //Me quedo con los PMTs que estan en la parte de x positiva y que son PMT y no arapucas
+       //Me quedo con los PMTs que estan en la parte de x positiva y que son PMTs y no arapucas
        if(xpmt==211.465&&ypmt!=0&&ypmt!=130&&ypmt!=-130)
        {
 
        double zpmt=Zpmt->at(j);
        double chanpmt=numpmt->at(j);
        cout<<"Canal optico: "<<chanpmt<<endl;
-
-
        cout<<"Posicion: "<<xpmt<<" "<<ypmt<<" "<<zpmt<<endl;
        //distancia del punto de centelleo al centro del PMT
        double distance_cm=sqrt(pow(xscint-xpmt,2)+pow(yscint-ypmt,2)+pow(zscint-zpmt,2));
@@ -270,12 +264,11 @@ cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
       if(distance_cm >= d_break) {
       double R_apparent_far = b - par1[counter];
       double geo_factor=2*3.1416 * (1 - sqrt(1 - pow(R_apparent_far/distance_cm,2)));
-     //Hasta aquí devuelve el geo_factor que es la corrección por ángulo sólido
+     //Hasta aquí devuelve el geo_factor
       //Calculamos el numero de fotones detectados tras la corrección geométrica en un pmt
       // Number of hits by geometric acceptance
       double L_abs=2000; //cm
-     //numero de fotones depositados en un PMT por geometria
-
+     //numero de fotones depositados en un PMT con la geometria (ángulo solido)
     double hits_geo = exp(-1.*distance_cm/L_abs)*gRandom->Poisson(phot_gen * geo_factor/(4*3.1416));
     if(hits_geo==0) continue;
    //numero de fotones detectados en ese PMT por simulación
@@ -292,12 +285,10 @@ cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
        if(hits_flash==0) continue;
        if(hits_g4==0) continue;
 
-
-      //if((hits_flash<363)||(hits_flash>2423)) continue; //onaxis
-
        cout<<"histograma: "<<counter<<" theta: "<<theta<<" dist: "<<distance_cm<<" Hitsg4: "<<hits_g4<<endl;
        cout<<"Error: "<<(hits_flash-hits_g4)/hits_g4<<endl;
 
+       //Lleno los histogramas para el rango de ángulos que hemos elegido
        if((theta>=(angle-10))&&(theta<angle)){
        //En funcion de la distancia
        hprof1->Fill(distance_cm,(hits_flash-hits_g4)/hits_g4);
@@ -345,9 +336,6 @@ cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
 
         if(hits_flash==0) continue;
         if(hits_g4==0) continue;
-
-
-       //if((hits_flash<363)||(hits_flash>2423)) continue;//onaxis
 
         cout<<"histograma: "<<counter<<" theta: "<<theta<<" dist: "<<distance_cm<<" Hitsg4: "<<hits_g4<<endl;
         cout<<"Error: "<<(hits_flash-hits_g4)/hits_g4<<endl;
@@ -398,7 +386,7 @@ TGraphErrors *gr4;
 double mean[9]={-0.02987,-0.02901,-0.02702,-0.026,-0.02393,-0.02161,-0.02205,-0.02257,-0.0191};
 
 
-//En funcion del numero de fotones
+//En funcion de la distancia
 //incializo
 double nphotsup1[1], nphotslow1[1];
 nphotsup1[0]=1000000;
@@ -443,12 +431,13 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
 
 
     ///////////////////
-        if(angle==10){double error[2]={mean[0]-0.05,mean[0]+0.05};
+    //Para cada set de ángulos:
+      if(angle==10){double error[2]={mean[0]-0.05,mean[0]+0.05};
         //si el error es mayor del 5%
       if(x_value>150&&(y_value<error[0]||y_value>error[1])){
         double photsup=x_value;
 
-        //Corto en el numero más pequeño de fotones
+        //Corto en la distancia máxima
         if(photsup<nphotsup1[0]){
           nphotsup1[0]=photsup;
         }
@@ -457,7 +446,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value<150&&(y_value<error[0]||y_value>error[1])){
           double photslow=x_value;
 
-          //Corto en el numero más pequeño de fotones
+          //Corto en la distancia minima
           if(photslow>nphotslow1[0]){
             nphotslow1[0]=photslow;
           }
@@ -470,7 +459,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
       if(x_value>150&&(y_value<error[0]||y_value>error[1])){
         double photsup=x_value;
 
-        //Corto en el numero más pequeño de fotones
+
         if(photsup<nphotsup1[0]){
           nphotsup1[0]=photsup;
         }
@@ -479,7 +468,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value<150&&(y_value<error[0]||y_value>error[1])){
           double photslow=x_value;
 
-          //Corto en el numero más pequeño de fotones
+
           if(photslow>nphotslow1[0]){
             nphotslow1[0]=photslow;
           }
@@ -490,7 +479,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
       if(x_value>150&&(y_value<error[0]||y_value>error[1])){
         double photsup=x_value;
 
-        //Corto en el numero más pequeño de fotones
+
         if(photsup<nphotsup1[0]){
           nphotsup1[0]=photsup;
         }
@@ -499,7 +488,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value<150&&(y_value<error[0]||y_value>error[1])){
           double photslow=x_value;
 
-          //Corto en el numero más pequeño de fotones
+
           if(photslow>nphotslow1[0]){
             nphotslow1[0]=photslow;
           }
@@ -510,7 +499,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value>150&&(y_value<error[0]||y_value>error[1])){
           double photsup=x_value;
 
-          //Corto en el numero más pequeño de fotones
+
           if(photsup<nphotsup1[0]){
             nphotsup1[0]=photsup;
           }
@@ -519,7 +508,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
           if(x_value<150&&(y_value<error[0]||y_value>error[1])){
             double photslow=x_value;
 
-            //Corto en el numero más pequeño de fotones
+
             if(photslow>nphotslow1[0]){
               nphotslow1[0]=photslow;
             }
@@ -530,7 +519,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
       if(x_value>150&&(y_value<error[0]||y_value>error[1])){
         double photsup=x_value;
 
-        //Corto en el numero más pequeño de fotones
+
         if(photsup<nphotsup1[0]){
           nphotsup1[0]=photsup;
         }
@@ -539,7 +528,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value<150&&(y_value<error[0]||y_value>error[1])){
           double photslow=x_value;
 
-          //Corto en el numero más pequeño de fotones
+
           if(photslow>nphotslow1[0]){
             nphotslow1[0]=photslow;
           }
@@ -550,7 +539,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
       if(x_value>150&&(y_value<error[0]||y_value>error[1])){
         double photsup=x_value;
 
-        //Corto en el numero más pequeño de fotones
+
         if(photsup<nphotsup1[0]){
           nphotsup1[0]=photsup;
         }
@@ -559,7 +548,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value<150&&(y_value<error[0]||y_value>error[1])){
           double photslow=x_value;
 
-          //Corto en el numero más pequeño de fotones
+
           if(photslow>nphotslow1[0]){
             nphotslow1[0]=photslow;
           }
@@ -570,7 +559,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
       if(x_value>150&&(y_value<error[0]||y_value>error[1])){
         double photsup=x_value;
 
-        //Corto en el numero más pequeño de fotones
+
         if(photsup<nphotsup1[0]){
           nphotsup1[0]=photsup;
         }
@@ -579,7 +568,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value<150&&(y_value<error[0]||y_value>error[1])){
           double photslow=x_value;
 
-          //Corto en el numero más pequeño de fotones
+
           if(photslow>nphotslow1[0]){
             nphotslow1[0]=photslow;
           }
@@ -590,7 +579,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
       if(x_value>150&&(y_value<error[0]||y_value>error[1])){
         double photsup=x_value;
 
-        //Corto en el numero más pequeño de fotones
+
         if(photsup<nphotsup1[0]){
           nphotsup1[0]=photsup;
         }
@@ -599,7 +588,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value<150&&(y_value<error[0]||y_value>error[1])){
           double photslow=x_value;
 
-          //Corto en el numero más pequeño de fotones
+
           if(photslow>nphotslow1[0]){
             nphotslow1[0]=photslow;
           }
@@ -610,7 +599,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
       if(x_value>150&&(y_value<error[0]||y_value>error[1])){
         double photsup=x_value;
 
-        //Corto en el numero más pequeño de fotones
+
         if(photsup<nphotsup1[0]){
           nphotsup1[0]=photsup;
         }
@@ -619,7 +608,7 @@ for (Int_t bin=0; bin <= nbins1; bin++) {
         if(x_value<150&&(y_value<error[0]||y_value>error[1])){
           double photslow=x_value;
 
-          //Corto en el numero más pequeño de fotones
+
           if(photslow>nphotslow1[0]){
             nphotslow1[0]=photslow;
           }
@@ -635,7 +624,7 @@ cout<<"-----------------------------------------"<<endl;
  gr1 = new TGraphErrors(vx1.size(), &vx1[0], &vy1[0], 0, &vey1[0]);
 
 
-//Pintamos (hits_flash-hits_g4)/hits_g4 en funcion de la distancia
+//Graficamos (hits_flash-hits_g4)/hits_g4 en funcion de la distancia
 c1->cd(1);
 
 double xx1[2]={0,400};
@@ -735,7 +724,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
   if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
     double photsup=x_value;
     nphotscut2+= x_value;
-    //Corto en el numero más pequeño de fotones
+    //Corto en el numero más grande de fotones
     if(photsup<nphotsup2[0]){
       nphotsup2[0]=photsup;
     }
@@ -757,7 +746,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
   if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
     double photsup=x_value;
     nphotscut2+= x_value;
-    //Corto en el numero más pequeño de fotones
+    //Corto en el numero más grande de fotones
     if(photsup<nphotsup2[0]){
       nphotsup2[0]=photsup;
     }
@@ -777,7 +766,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
   if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
     double photsup=x_value;
     nphotscut2+= x_value;
-    //Corto en el numero más pequeño de fotones
+    //Corto en el numero más grande de fotones
     if(photsup<nphotsup2[0]){
       nphotsup2[0]=photsup;
     }
@@ -797,7 +786,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
     if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
       double photsup=x_value;
       nphotscut2+= x_value;
-      //Corto en el numero más pequeño de fotones
+      //Corto en el numero más grande de fotones
       if(photsup<nphotsup2[0]){
         nphotsup2[0]=photsup;
       }
@@ -817,7 +806,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
   if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
     double photsup=x_value;
     nphotscut2+= x_value;
-    //Corto en el numero más pequeño de fotones
+    //Corto en el numero más grande de fotones
     if(photsup<nphotsup2[0]){
       nphotsup2[0]=photsup;
     }
@@ -837,7 +826,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
   if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
     double photsup=x_value;
     nphotscut2+= x_value;
-    //Corto en el numero más pequeño de fotones
+    //Corto en el numero más grande de fotones
     if(photsup<nphotsup2[0]){
       nphotsup2[0]=photsup;
     }
@@ -857,7 +846,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
   if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
     double photsup=x_value;
     nphotscut2+= x_value;
-    //Corto en el numero más pequeño de fotones
+    //Corto en el numero más grande de fotones
     if(photsup<nphotsup2[0]){
       nphotsup2[0]=photsup;
     }
@@ -877,7 +866,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
   if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
     double photsup=x_value;
     nphotscut2+= x_value;
-    //Corto en el numero más pequeño de fotones
+    //Corto en el numero más grande de fotones
     if(photsup<nphotsup2[0]){
       nphotsup2[0]=photsup;
     }
@@ -897,7 +886,7 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
   if(x_value>1000&&(y_value<error[0]||y_value>error[1])){
     double photsup=x_value;
     nphotscut2+= x_value;
-    //Corto en el numero más pequeño de fotones
+    //Corto en el numero más grande de fotones
     if(photsup<nphotsup2[0]){
       nphotsup2[0]=photsup;
     }
@@ -912,18 +901,6 @@ for (Int_t bin=0; bin <= nbins2; bin++) {
       }
       cout<<"N phots low: "<<nphotslow2[0]<<endl;}
     }
-
-
-
-
-
-    //corte en el numero de fotones
-    //if(bin>1){
-      //double xbefore= hprofx2[i]->GetBinContent(bin-1);
-      //double ybefore= hprof2[i]->GetBinContent(bin-1);
-      //double pendiente=(y_value-ybefore)/(x_value-xbefore);
-      //cout<<"pendiente: "<<pendiente<<endl;
-  //}
 
 
  }
@@ -942,7 +919,7 @@ cout<<"Fotones totales: "<<nphotstot2<<" Fotones que cortamos (tienen mas de 5% 
   //cout<<"Chi2= "<<Chi2<<endl;
 
 //}
-//Pintamos (hits_flash-hits_g4)/hits_g4 en funcion del numero de fotones G4
+//Graficamos (hits_flash-hits_g4)/hits_g4 en funcion del numero de fotones G4
 c1->cd(2);
 
 double xx2[2]={0,4000};
@@ -1027,7 +1004,7 @@ cout<<"-----------------------------------------"<<endl;
  gr3 = new TGraphErrors(vx3.size(), &vx3[0], &vy3[0], 0, &vey3[0]);
 
 
-//Pintamos las gaisser hillas para reco vuv
+//Graficamos las gaisser hillas con fotones reco vuv
 c1->cd(4);
 
 double xx3[2]={0,600};
@@ -1183,6 +1160,7 @@ leg3->Draw();
 
 
 /////////////////////////////////////////////////////////
+//GH
 
 
 vector<double> vx, vy, vex, vey;
@@ -1217,7 +1195,7 @@ cout<<"-----------------------------------------"<<endl;
 
 
 
-//Pintamos las gaisser hillas para g4 vuv
+//Graficamos las gaisser hillas con fotones g4 vuv
 c1->cd(3);
 
 double xx4[2]={0,600};

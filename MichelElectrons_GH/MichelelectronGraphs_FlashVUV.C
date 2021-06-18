@@ -1,10 +1,10 @@
-//Programa que calcula la calibración geométrica del modelo semianalítico para SBND
-//Se representan las GH teóricas para intervalos de ángulos [0º,10º], [10,20].....[80,90]
+//Programa que calcula la calibración del modelo semianalítico (para las GH) usando datos reales para SBND
+//Se representan las GH teóricas con los parámetros en la simulaciópn para intervalos de ángulos [0º,10º], [10,20].....[80,90]
 //Input: fichero .root con 2000 electrones Michel
 //Calcula NfotonesrecoVUV/Nfotonesgeom para cada Michel en función de la distancia del electrón a cada PMT
 //la poscion de cada Michel se calcula como la media de las posiciones de las deposiciones de energía para ese electrón
 //pesadas por la energía depositada. Las posiciones de los PMT se leen de un .root
-//Objetivo: ver si se recuperan las curvas GH, donde NfotonesRecoVUV son los fotones VUV detectados proporcionados
+//Objetivo: ver si se recuperan las curvas GH, donde NfotonesRecoVUV son los fotones VUV digitalizados detectados proporcionados
 //por la simulación a nivel detsim OpFlash
 //y Nfotonesgeom los fotones generados multiplicados por la corrección geométrica (ángulo sólido)
 
@@ -99,12 +99,12 @@ for(int j=0; j<9; j++) {
   //.root con el número de cada PMT, y la posicion x, y, z
   TFile *inputPMTs= new TFile("PMTs.root","read");
 
-
+  //Leemos la energia depositada en cada step, las posiciones x,y,z y los fotones generados (phot_generated).
+  //Leemos flash_pe_vuv: fotones detectados vuv con la digitalizacion
   vector<double> *E, *phot_generated, *X, *Y, *Z, *flash_pe_vuv;
-  //vector<int> *chanopt, *chanoptref;
 
+ //Para los PMTs leemos de un .root el número del canal optico (numpmt) y la posición x,y,z de ese PMT
   vector<double> *numpmt, *Xpmt, *Ypmt, *Zpmt;
-  //double numpmt, Xpmt, Ypmt, Zpmt;
 
   TTree* treeMichels=(TTree*)inputMichels->Get("ana/tree");
   TTree* treePMTs=(TTree*)inputPMTs->Get("treepmt");
@@ -194,7 +194,7 @@ cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
   double zscint=hz->GetMean();
   cout<<hx->GetRMS()<<" "<<hy->GetRMS()<<" "<<hz->GetRMS()<<endl;
   //Corte para que no tenga en cuenta los electrones que sus posiciones de deposiciones de energía estén
-  //separadas más de 5cm
+  //separadas más de 7cm
   double MinSpread=7;
   if(hx->GetRMS()>MinSpread||hy->GetRMS()>MinSpread||hz->GetRMS()>MinSpread) continue;
   //cout<<" x media= "<<xscint<<" y= "<<yscint<<" z= "<<zscint<<endl;

@@ -1,3 +1,7 @@
+//Pad1: Representa x= distance (cm) frente a y=(N_{RecoVUV}-N_{Lite})/N_{Lite}) (el error relativo en función de la distanca)
+//Pad2: Representa x=N_{RecoVUV} frente a y=(N_{RecoVUV}-N_{Lite})/N_{Lite}) (el error relativo en función de los fotones VUV reconstruidos)
+//Pad3: Scatter plot, representa x= distance (cm), y=N_{RecoVUV}
+//Pad4: Histograma con la distribución del error relativo: N_{RecoVUV}-N_{Lite})/N_{Lite} para ver el bias en la reconstrucción
 {
 
 

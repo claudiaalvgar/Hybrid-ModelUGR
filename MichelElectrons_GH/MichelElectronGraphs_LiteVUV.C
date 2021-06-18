@@ -1,5 +1,5 @@
-//Programa que calcula la calibración geométrica del modelo semianalítico para SBND
-//Se representan las GH teóricas para intervalos de ángulos [0º,10º], [10,20].....[80,90]
+//Programa que calcula la calibración del modelo semianalítico (para las GH) usando datos reales para SBND
+//Se representan las GH teóricas con los parámetros en la simulaciópn para intervalos de ángulos [0º,10º], [10,20].....[80,90]
 //Input: fichero con 10000 electrones Michel
 //Calcula NfotonesLite/Nfotonesgeom para cada Michel en función de la distancia del electrón a cada PMT
 //para ver si se recuperan las GH, donde NfotonesLite son los fotones VUV detectados proporcionados
@@ -98,11 +98,12 @@ for(int j=0; j<9; j++) {
   TFile *inputMichels= new TFile("output_10000_30MeV_gaus_semi.root","read");
   TFile *inputPMTs= new TFile("PMTs.root","read");
 
-
+  //Leemos la energia depositada en cada step, las posiciones x,y,z y los fotones generados (phot_generated).
+  //Leemos phot_detected son los fotones detectados sin la digitalización (g4) y los canales ópticos para en los que se detectan
+  //los fotones vuv (chanopt)
   vector<double> *E, *phot_generated, *X, *Y, *Z, *phot_detected;
-  //vector<double> *phot_detectedref;
-  vector<int> *chanopt, *chanoptref;
-
+  vector<int> *chanopt;
+  //Para los PMTs leemos de un .root el número del canal optico (numpmt) y la posición x,y,z de ese PMT
   vector<double> *numpmt, *Xpmt, *Ypmt, *Zpmt;
   //double numpmt, Xpmt, Ypmt, Zpmt;
 
@@ -117,7 +118,7 @@ for(int j=0; j<9; j++) {
   treeMichels->SetBranchAddress("phot_detected",&phot_detected);
   //treeMichels->SetBranchAddress("phot_detectedref",&phot_detectedref);
   treeMichels->SetBranchAddress("chanopt",&chanopt);
-  treeMichels->SetBranchAddress("chanoptref",&chanoptref);
+  //treeMichels->SetBranchAddress("chanoptref",&chanoptref);
 
   treePMTs->SetBranchAddress("numpmt",&numpmt);
   treePMTs->SetBranchAddress("Xpmt",&Xpmt);
@@ -160,9 +161,6 @@ for(int j=0;j<X->size();j++){
    hz->Fill(Z->at(j),E->at(j));
    phot_gen += phot_generated->at(j);
    Energy += E->at(j);
-
-   //cout<<"x= "<<X->at(j)/E->at(j)<<" y= "<<Y->at(j)/E->at(j)<<" z= "<<Z->at(j)/E->at(j)<<endl;
-   //cout<<"fotones generados= "<<phot_generated->at(j)<<endl;
 }
 if(phot_gen==0) continue;
 cout<<"fotones generados para el electrón= "<<phot_gen<<endl;
