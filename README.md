@@ -15,7 +15,7 @@ Warning!: Although the electric is variable on the top and bottom side of the cr
 By using this repository you will be able to obtain a complete analysis of light simulation using the Hybrid Model.  
 List of .fcl and .C needed for running the complete simulation using the New Hybrid Model for Light Simulation in SBND.  
   - prodsingle_mu_NewGeom.fcl :  stage gen. Generates a muon sample using the "new geometry" for Hybrid Model (sbnd_v02_00.gdml).  
-  - OpHybrid_g4_refactored_sbnd.fcl : stage g4. Propagation of photons using the new library (SBND_OpLibOUT_v2.00.root) and geometry (sbnd_v02_00.gdml). If the  energy deposition is generated inside the active volume (IonAndScintIN) then it propagates photons using the Semianalytic Model (PAR) and if it is generated outside the active volume (IonAndScintOUT), then it uses the library for propagating photons (LIB).  
+  - OpHybrid_g4_refactored_sbnd.fcl : stage g4. Propagation of photons using the new library (SBND_OpLibOUT_v2.00.root) and geometry (sbnd_v02_00.gdml). If the  energy deposition is generated inside the active volume (IonAndScintIN) then it propagates photons using the Semianalytic Model (PAR) and if it is generated outside the active volume (IonAndScintOUT), then it uses the library for propagating photons (LIB). We are able to use LArQL model (by using services.LArG4Parameters.UseModLarqlRecomb: true) or not to use it (by using services.LArG4Parameters.UseModLarqlRecomb: false). This stage generates SimPhotonsLite.
   - run_analyseEvents.fcl : fcl for running the Analyzer. 
   - AnalyzeEvents_module.cc : Analyzer that stores: energy depositions in each step (E and E1, for the semianalytic and the library), positions x (X, X1), y (Y, Y1), z (Z, Z1) of each step (SimEnergyDeposit) and photons detected vuv at a g4 stage (SimPhotonsLite) using the semianalytic model (phot_detected) and the library (phot_detected1) and vis (phot_detectedref and phot_detectedref1). 
   - EnergyDepositionsTest.C : Testing the Hybrid Model. Verify that we have energy depositions in the whole Cryostat volume in X, Y and Z directions.
@@ -34,16 +34,16 @@ With this analysis we have been able to demonstrate that:
 
 List of .fcl and .C needed for calibrating the SemiAnalytic Model (GH curves) for Light Simulation in SBND using real data (using a Michel electron-like sample).  
    - prodsingle_NewLarG4.fcl : stage gen. Generates an electron sample using a gaussian distribution for the energy and the positions in x, y, z.
-   - standard_g4_semi_claudia.fcl : stage g4. Propagation of photons using inside the active volume(launched in the centre of the positive tpc) (IonAndScint) then it propagates photons using the Semianalytic Model (LIB). This stage generates SimPhotonsLite.
+   - standard_g4_semi_claudia.fcl : stage g4. Propagation of photons using inside the active volume(launched in the centre of the positive tpc) (IonAndScint) then it propagates photons using the Semianalytic Model (LIB). We are able to simulate just vuv photons (by using DoReflectedLight: false) or vuv+vis photons (by using DoReflectedLight: true). This stage generates SimPhotonsLite.
    - run_flashfinder_claudia.fcl : stage detsim. Running the digitization using the IDEAL response of PMTs. This stage generates OpFlash.
    - run_analyseEvents_claudia.fcl : fcl for running the Analyzer.  
-   - AnalyzeEvents_FlashVUV.cc : Analyzer that stores: energy depositions in each step (E), positions x (X), y (Y), z (Z) of each step (SimEnergyDeposit) and photons detected vuv at a g4 stage (phot_detected) and the optical channel () (using SimPhotonsLite) . 
-   - AnalyzeEvents_FlashVUVVIS.cc : 
-   - PMTs.txt
-   - makePMTvector.C
-   - MichelElectronGraphs_LiteVUV.C
-   - MichelelectronGraphs_FlashVUV.C
-   - MichelElectronGraphs_FlashVUVVIS.C
+   - AnalyzeEvents_FlashVUV.cc : Analyzer that stores: energy depositions in each step (E), positions x (X), y (Y), z (Z) of each step and photons generated at each step (phot_generated), (using SimEnergyDeposit) and photons detected vuv at a g4 stage (phot_detected) and the optical channel (chanopt) (using SimPhotonsLite). It also stores digitized photons vuv (flash_pe_vuv) at detsim stage (Using OpFlash), for each Michel we have a vector flash_pe_vuv and the entries of the vectors are the number of the optical channel, so we don't need a new variable to store the optical channels.
+   - AnalyzeEvents_FlashVUVVIS.cc : Analyzer that stores: energy depositions in each step (E), positions x (X), y (Y), z (Z) of each step and photons generated at each step (phot_generated), (using SimEnergyDeposit) and photons detected vuv at a g4 stage (phot_detected) and the optical channel (chanopt) (using SimPhotonsLite). It also stores digitized photons vuv+vis (flash_pe_vuvvis) at detsim stage (Using OpFlash), for each Michel we have a vector flash_pe_vuvvis and the entries of the vectors are the number of the optical channel, so we don't need a new variable to store the optical channels.
+   - PMTs.txt : list of 320 PMTs of SBND.
+   - makePMTvector.C : making a .root file of 320 PMTs.
+   - MichelElectronGraphs_LiteVUV.C : 
+   - MichelelectronGraphs_FlashVUV.C : 
+   - MichelElectronGraphs_FlashVUVVIS.C : 
    - CutDistanceandPhots.C
    - StandardDeviation.C
    - Nphots-distance-profile2D.C
