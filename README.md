@@ -17,7 +17,7 @@ List of .fcl and .C needed for running the complete simulation using the New Hyb
   - prodsingle_mu_NewGeom.fcl :  stage gen. Generates a muon sample using the "new geometry" for Hybrid Model (sbnd_v02_00.gdml).  
   - OpHybrid_g4_refactored_sbnd.fcl : stage g4. Propagation of photons using the new library (SBND_OpLibOUT_v2.00.root) and geometry (sbnd_v02_00.gdml). If the  energy deposition is generated inside the active volume (IonAndScintIN) then it propagates photons using the Semianalytic Model (PAR) and if it is generated outside the active volume (IonAndScintOUT), then it uses the library for propagating photons (LIB).  
   - run_analyseEvents.fcl : fcl for running the Analyzer. 
-  - AnalyzeEvents_module.cc : Analyzer that stores: energy depositions in each step, positions x, y, z of each step and photons detected using the semianalytic model and the library. 
+  - AnalyzeEvents_module.cc : Analyzer that stores: energy depositions in each step (E and E1, for the semianalytic and the library), positions x (X, X1), y (Y, Y1), z (Z, Z1) of each step (SimEnergyDeposit) and photons detected vuv at a g4 stage (SimPhotonsLite) using the semianalytic model (phot_detected) and the library (phot_detected1) and vis (phot_detectedref and phot_detectedref1). 
   - EnergyDepositionsTest.C : Testing the Hybrid Model. Verify that we have energy depositions in the whole Cryostat volume in X, Y and Z directions.
   - LightYield_Hybrid_with_without_LArQL.C : Launching 50 crossing muons in different x positions in order to calculate the light yield in each x position (covering positions inside and outside the active volume). The light yield is calculated using LArQL model that has into account escaping electrons at low electric fields and without using LArQL model (the difference is important outside the active volume where the Efield= 0 kV/cm).
   - PhotsDetected_Hybrid_with_without_LarQL.C : Same as the previous program but calculating just the number of photons (#PE) instead of the light yield.
@@ -37,8 +37,8 @@ List of .fcl and .C needed for calibrating the SemiAnalytic Model (GH curves) fo
    - standard_g4_semi_claudia.fcl : stage g4. Propagation of photons using inside the active volume(launched in the centre of the positive tpc) (IonAndScint) then it propagates photons using the Semianalytic Model (LIB). This stage generates SimPhotonsLite.
    - run_flashfinder_claudia.fcl : stage detsim. Running the digitization using the IDEAL response of PMTs. This stage generates OpFlash.
    - run_analyseEvents_claudia.fcl : fcl for running the Analyzer.  
-   - AnalyzeEvents_FlashVUV.cc : 
-   - AnalyzeEvents_FlashVUVVIS.cc
+   - AnalyzeEvents_FlashVUV.cc : Analyzer that stores: energy depositions in each step (E), positions x (X), y (Y), z (Z) of each step (SimEnergyDeposit) and photons detected vuv at a g4 stage (phot_detected) and the optical channel () (using SimPhotonsLite) . 
+   - AnalyzeEvents_FlashVUVVIS.cc : 
    - PMTs.txt
    - makePMTvector.C
    - MichelElectronGraphs_LiteVUV.C
