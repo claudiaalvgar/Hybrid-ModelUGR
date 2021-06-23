@@ -1,5 +1,6 @@
-# Work Essay
-* File_Task 1: LightSimulation_Hybrid.  
+# Work Essay. 
+
+***File_Task 1: LightSimulation_Hybrid.***  
 
 The main idea about the Hybrid model is doing the propagation of photons not only inside the active volume of SBND but also in the Cryostat volume that contains the active volume and that it is also made of liquid argon.  
 Previously, SBND used just the semianalytic model for propagating photons inside the active volume. This model uses corrections to the geometric efficiencies and it is based on the solid angle from the energy depositions to each PMT. Because of this solid angle dependence, it is not a valid approach outside the active volume.  
@@ -18,10 +19,10 @@ List of .fcl and .C needed for running the complete simulation using the New Hyb
   - run_analyseEvents.fcl : fcl for running the Analyzer. 
   - AnalyzeEvents_module.cc : Analyzer that stores: energy depositions in each step, positions x, y, z of each step and photons detected using the semianalytic model and the library. 
   - EnergyDepositionsTest.C : Testing the Hybrid Model. Verify that we have energy depositions in the whole Cryostat volume in X, Y and Z directions.
-  - LightYield_Hybrid_with_without_LArQL.C : Launching 50 crossing muons in different x positions in order to calculate the light yield in each x position (covering positions inside and outside the active volume). The light yield is calculated using LArQL model that has into account escaping electrons at low electric fields and without using LArQL model (the difference are important outside the active volume where the Efield= 0 kV/cm).
+  - LightYield_Hybrid_with_without_LArQL.C : Launching 50 crossing muons in different x positions in order to calculate the light yield in each x position (covering positions inside and outside the active volume). The light yield is calculated using LArQL model that has into account escaping electrons at low electric fields and without using LArQL model (the difference is important outside the active volume where the Efield= 0 kV/cm).
   - PhotsDetected_Hybrid_with_without_LarQL.C : Same as the previous program but calculating just the number of photons (#PE) instead of the light yield.
 
-* File_Task 2: MichelElectrons_GH.  
+***File_Task 2: MichelElectrons_GH.***  
 
 The geometric propagation of the Semianalytic Model is not model dependent but the GH correction is strongly dependent on the model, because it is based on the Montecarlo simulation and depends on parameters that we dont know exactly its values like the Rayleigh Scattering length and the SBND refelectivities, that’s why calibrating this curves with data-driven corrections is so important.
 The main idea of this analysis is to obtain this correction by using real data, so ideally, we need point-like energy depositions. A possible good sample for this purpose is a Michel electron sample because electrons coming from the muon decay have a little energy range, little than 50 MeV and this sample will be almost point-like and close to the ideal case.
