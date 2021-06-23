@@ -30,15 +30,15 @@ So as a proof of concept our choice is a low-energy electron sample with a gauss
 With this analysis we have been able to demonstrate that:
 - We are able to calibrate the Semi-Analytic Model with data-driven corrections.
 - Michel electrons, in principle, allow to generate the GH corrections by using cuts proposed.
-- Finally, we have done this study using PMTs but conclusions can be extrapolated to the arapucas.  
+- Finally, we have done this study using PMTs but conclusions can be extrapolated to the ARAPUCAS.  
 
 List of .fcl and .C needed for calibrating the SemiAnalytic Model (GH curves) for Light Simulation in SBND using real data (using a Michel electron-like sample).  
-   - prodsingle_NewLarG4.fcl :
-   - standard_g4_semi_claudia.fcl
-   - run_flashfinder_claudia.fcl
-   - AnalyzeEvents_FlashVUV.cc
+   - prodsingle_NewLarG4.fcl : stage gen. Generates an electron sample using a gaussian distribution for the energy and the positions in x, y, z.
+   - standard_g4_semi_claudia.fcl : stage g4. Propagation of photons using inside the active volume(launched in the centre of the positive tpc) (IonAndScint) then it propagates photons using the Semianalytic Model (LIB). This stage generates SimPhotonsLite.
+   - run_flashfinder_claudia.fcl : stage detsim. Running the digitization using the IDEAL response of PMTs. This stage generates OpFlash.
+   - run_analyseEvents_claudia.fcl : fcl for running the Analyzer.  
+   - AnalyzeEvents_FlashVUV.cc : 
    - AnalyzeEvents_FlashVUVVIS.cc
-   - run_analyseEvents_claudia.fcl
    - PMTs.txt
    - makePMTvector.C
    - MichelElectronGraphs_LiteVUV.C
