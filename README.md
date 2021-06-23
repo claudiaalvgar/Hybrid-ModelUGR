@@ -39,14 +39,16 @@ List of .fcl and .C needed for calibrating the SemiAnalytic Model (GH curves) fo
    - run_analyseEvents_claudia.fcl : fcl for running the Analyzer.  
    - AnalyzeEvents_FlashVUV.cc : Analyzer that stores: energy depositions in each step (E), positions x (X), y (Y), z (Z) of each step and photons generated at each step (phot_generated), (using SimEnergyDeposit) and photons detected vuv at a g4 stage (phot_detected) and the optical channel (chanopt) (using SimPhotonsLite). It also stores digitized photons vuv (flash_pe_vuv) at detsim stage (Using OpFlash), for each Michel we have a vector flash_pe_vuv and the entries of the vectors are the number of the optical channel, so we don't need a new variable to store the optical channels.
    - AnalyzeEvents_FlashVUVVIS.cc : Analyzer that stores: energy depositions in each step (E), positions x (X), y (Y), z (Z) of each step and photons generated at each step (phot_generated), (using SimEnergyDeposit) and photons detected vuv at a g4 stage (phot_detected) and the optical channel (chanopt) (using SimPhotonsLite). It also stores digitized photons vuv+vis (flash_pe_vuvvis) at detsim stage (Using OpFlash), for each Michel we have a vector flash_pe_vuvvis and the entries of the vectors are the number of the optical channel, so we don't need a new variable to store the optical channels.
-   - PMTs.txt : list of 320 PMTs of SBND.
-   - makePMTvector.C : making a .root file of 320 PMTs.
-   - MichelElectronGraphs_LiteVUV.C : 
-   - MichelelectronGraphs_FlashVUV.C : 
-   - MichelElectronGraphs_FlashVUVVIS.C : 
-   - CutDistanceandPhots.C
-   - StandardDeviation.C
-   - Nphots-distance-profile2D.C
+   - PMTs.txt : list of the positions of the 320 PMTs of SBND.
+   - makePMTvector.C : making a .root file of 320 PMTs and positions.
+   - MichelElectronGraphs_LiteVUV.C : Recovering GH curves using VUV photons at g4 stage.
+   - MichelelectronGraphs_FlashVUV.C : Recovering GH curves using VUV photons including digitization. 
+   - MichelElectronGraphs_FlashVUVVIS.C : Recovering GH curves using (VUV+VIS at coated)-(VIS at uncoated) in each window with photons including digitization. 
+   - StandardDeviation.C : Studying the spread the postions of the energy depositions for each Michel (standard deviation and cumulative).
+   - Nphots-distance-profile2D.C : Relative error between VUV photons reco and VUV true photons detected. 
+The relative error is shown in the color bar.
+So we need to establish a method in order to cut in photons detected and distances.
+   - CutDistanceandPhots.C : quality cuts for VUV digitized photons: if the error between photons reco and lite is deviated from the mean value of the relative error more than a 5% we cut in distance and in number of photons reconstructed.
    - ErrorDistribution.C
    
 
