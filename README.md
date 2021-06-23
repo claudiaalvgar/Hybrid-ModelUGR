@@ -1,5 +1,5 @@
 # Work Essay
-* LightSimulation_Hybrid.  
+* File_Task 1: LightSimulation_Hybrid.  
 
 The main idea about the Hybrid model is doing the propagation of photons not only inside the active volume of SBND but also in the Cryostat volume that contains the active volume and that it is also made of liquid argon.  
 Previously, SBND used just the semianalytic model for propagating photons inside the active volume. This model uses corrections to the geometric efficiencies and it is based on the solid angle from the energy depositions to each PMT. Because of this solid angle dependence, it is not a valid approach outside the active volume.  
@@ -8,18 +8,20 @@ The other option that we have available for propagating photons is using a libra
 
 For all this reason the Hybrid model for SBND does the propagation of photons using the semianalytic model inside the active volume and it uses an Optical Library for propagating photons outside the active volume.  
 Also, in order to solve memory problems with the loading of a complete library, a new scaled-down library which just stores visibilities outside the active volume was implemented -It has no visibilities stored inside the active volume and therefore it is less heavy-.  
-This way, the Hybrid Nodel need to use two modules in larsim: the library module outside the active volume (PDFastSimPVS_module.cc) and the semianalytic module (PDFastSimPAR_module.cc) inside the active volume, so its implementation is trivial using the New LarG4 because of its modular structure, that’s why the modifications have been done in the New LArg4 (This implementation can be found in the Repository claudiaalvgar/larsim in the branch called Hybrid-ModelUGR with the commit "Updates for Hybrid Model").  
+This way, the Hybrid Nodel need to use two modules in larsim: the library module outside the active volume (PDFastSimPVS_module.cc) and the semianalytic module (PDFastSimPAR_module.cc) inside the active volume, so its implementation is trivial using the New LarG4 because of its modular structure, that’s why the modifications have been done in the New LArg4 (This implementation can be found in the Repository claudiaalvgar/larsim in the branch called Hybrid-ModelUGR with the commit "Updates for Hybrid Model" and the fcls required in sbndcode can be found in claudiaalvgar/sbndcode in the branch called Hybrid-ModelUGR with the commit "Hybrid Model").  
+Warning!: Although the electric is variable on the top and bottom side of the cryostat if we represent the visibilities of the library, the visibilities on the top and bottom side are almost negligible, so including the variable electric field will add little change to the Hybrid Model. Behind PMTs the electric field is zero and in the rest of the cryostat visibilities are negligible, so as first approach using an electric field of 0 in all the cryostat is a good approach. Nevertheless including the variable field is the next step of the Hybrid Model.
+
 By using this repository you will be able to obtain a complete analysis of light simulation using the Hybrid Model.  
 List of .fcl and .C needed for running the complete simulation using the New Hybrid Model for Light Simulation in SBND.  
-  - prodsingle_mu_NewGeom.fcl
-  - OpHybrid_g4_refactored_sbnd.fcl
-  - AnalyzeEvents_module.cc
-  - run_analyseEvents.fcl
-  - EnergyDepositionsTest.C
-  - LightYield_Hybrid_with_without_LArQL.C
-  - PhotsDetected_Hybrid_with_without_LarQL.C
+  - prodsingle_mu_NewGeom.fcl :  stage gen. Generates a muon sample using the "new geometry" for Hybrid Model (sbnd_v02_00.gdml).  
+  - OpHybrid_g4_refactored_sbnd.fcl : stage g4. Propagation of photons using the new library (SBND_OpLibOUT_v2.00.root) and geometry (sbnd_v02_00.gdml). If the  energy deposition is generated inside the active volume (IonAndScintIN) then it propagates photons using the Semianalytic Model (PAR) and if it is generated outside the active volume (IonAndScintOUT), then it uses the library for propagating photons (LIB).  
+  - run_analyseEvents.fcl : fcl for running the Analyzer. 
+  - AnalyzeEvents_module.cc : Analyzer that stores: energy depositions in each step, positions x, y, z of each step and photons detected using the semianalytic model and the library. 
+  - EnergyDepositionsTest.C : Testing the Hybrid Model. Verify that we have energy depositions in the whole Cryostat volume in X, Y and Z directions.
+  - LightYield_Hybrid_with_without_LArQL.C : Launching 50 crossing muons in different x positions in order to calculate the light yield in each x position (covering positions inside and outside the active volume). The light yield is calculated using LArQL model that has into account escaping electrons at low electric fields and without using LArQL model (the difference are important outside the active volume where the Efield= 0 kV/cm).
+  - PhotsDetected_Hybrid_with_without_LarQL.C : Same as the previous program but calculating just the number of photons (#PE) instead of the light yield.
 
-* MichelElectrons_GH.  
+* File_Task 2: MichelElectrons_GH.  
 
 The geometric propagation of the Semianalytic Model is not model dependent but the GH correction is strongly dependent on the model, because it is based on the Montecarlo simulation and depends on parameters that we dont know exactly its values like the Rayleigh Scattering length and the SBND refelectivities, that’s why calibrating this curves with data-driven corrections is so important.
 The main idea of this analysis is to obtain this correction by using real data, so ideally, we need point-like energy depositions. A possible good sample for this purpose is a Michel electron sample because electrons coming from the muon decay have a little energy range, little than 50 MeV and this sample will be almost point-like and close to the ideal case.
@@ -30,7 +32,7 @@ With this analysis we have been able to demonstrate that:
 - Finally, we have done this study using PMTs but conclusions can be extrapolated to the arapucas.  
 
 List of .fcl and .C needed for calibrating the SemiAnalytic Model (GH curves) for Light Simulation in SBND using real data (using a Michel electron-like sample).  
-   - prodsingle_NewLarG4.fcl
+   - prodsingle_NewLarG4.fcl :
    - standard_g4_semi_claudia.fcl
    - run_flashfinder_claudia.fcl
    - AnalyzeEvents_FlashVUV.cc
